@@ -1,0 +1,88 @@
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    color: var(--secondary);
+    font-size: 0.95rem;
+    margin-top: 1rem;
+}
+
+.section {
+    margin-bottom: 3rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+}
+
+.brief {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--foreground);
+}
+
+.tableGrid {
+    display: grid;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .tableGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.linkButton {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+}
+
+.linkButton:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.error {
+    text-align: center;
+    padding: 4rem;
+    color: var(--danger);
+    font-size: 1.2rem;
+}
