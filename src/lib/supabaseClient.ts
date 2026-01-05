@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Provide a fallback to prevent build errors if Env Vars are missing
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables')
+// Warn in console instead of crashing
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    console.warn('WARNING: NEXT_PUBLIC_SUPABASE_URL is missing. Using placeholder.')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
