@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styles from './Header.module.css';
+import SearchBar from '../ui/SearchBar';
 
 const NAV_ITEMS = [
     { label: 'Home', href: '/' },
@@ -31,7 +32,7 @@ export default function Header() {
                 </nav>
 
                 <div className={styles.actions}>
-                    {/* Placeholder for Search or Login */}
+                    <SearchBar />
                     <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
                         App
                     </button>

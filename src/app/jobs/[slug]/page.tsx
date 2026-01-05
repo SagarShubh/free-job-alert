@@ -8,14 +8,15 @@ import type { Metadata } from 'next';
 export const revalidate = 60; // Revalidate every 60 seconds
 
 type Props = {
-    params: { slug: string }
+    params: Promise<{ slug: string }>
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params;
     const { data: job } = await supabase
         .from('jobs')
         .select('title, brief_info')
-        .eq('slug', params.slug)
+        .eq('slug', slug)
         .single();
 
     if (!job) {
@@ -29,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function JobDetailPage({ params }: Props) {
+    const { slug } = await params;
     const { data: job, error } = await supabase
         .from('jobs')
         .select(`
@@ -38,7 +40,7 @@ export default async function JobDetailPage({ params }: Props) {
       job_vacancies (post_name, total_posts, qualification, display_order),
       job_links (link_title, url, is_active, display_order)
     `)
-        .eq('slug', params.slug)
+        .eq('slug', slug)
         .single();
 
     if (error || !job) {
@@ -120,6 +122,49 @@ export default async function JobDetailPage({ params }: Props) {
                     ))}
                 </div>
             </div>
+
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'JobPosting',
+                        title: job.title,
+                        description: `<p>${job.brief_info}</p><p>Total Vacancy: ${job.total_vacancy}</p>`,
+                        identifier: {
+                            '@type': 'PropertyValue',
+                            name: job.organization,
+                            value: job.slug,
+                        },
+                        datePosted: job.post_date,
+                        validThrough: dates.find((d: any) => d.event_description.toLowerCase().includes('last date'))?.event_date
+                            ? new Date(dates.find((d: any) => d.event_description.toLowerCase().includes('last date')).event_date).toISOString().split('T')[0]
+                            : undefined,
+                        hiringOrganization: {
+                            '@type': 'Organization',
+                            name: job.organization,
+                            logo: 'https://free-job-alert-ten.vercel.app/logo.png', // Placeholder
+                        },
+                        jobLocation: {
+                            '@type': 'Place',
+                            address: {
+                                '@type': 'PostalAddress',
+                                addressCountry: 'IN',
+                                addressRegion: job.state_code === 'ALL' ? undefined : job.state_code,
+                            },
+                        },
+                        employmentType: 'FULL_TIME',
+                        baseSalary: {
+                            '@type': 'MonetaryAmount',
+                            currency: 'INR',
+                            value: {
+                                '@type': 'QuantitativeValue',
+                                unitText: 'MONTH',
+                            },
+                        },
+                    }),
+                }}
+            />
         </div>
     );
 }
