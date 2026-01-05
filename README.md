@@ -1,6 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Free Job Alert - Premium Government Job Portal
 
-## Getting Started
+![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel)
+
+A modern, high-performance job portal for government recruitment notifications (Sarkari Naukri). Built with Next.js 14, Supabase, and a premium Glassmorphism UI.
 
 First, run the development server:
 
