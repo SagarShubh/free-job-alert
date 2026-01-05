@@ -1,0 +1,55 @@
+.footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--glass-border);
+    padding: 3rem 0;
+    margin-top: auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.column h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--foreground);
+}
+
+.links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.links a {
+    color: var(--secondary);
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.links a:hover {
+    color: var(--primary);
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+    color: var(--secondary);
+    font-size: 0.85rem;
+}
+
+.disclaimer {
+    font-size: 0.8rem;
+    color: var(--secondary);
+    opacity: 0.8;
+    margin-top: 1rem;
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
