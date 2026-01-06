@@ -148,7 +148,7 @@ export default function EditJob() {
                     total_vacancy: formData.total_vacancy,
                     job_type: formData.job_type,
                     is_featured: formData.is_featured,
-                    status: 'active' // PUBLISH!
+                    status: 'published' // PUBLISH!
                 })
                 .eq('id', id);
 
