@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../lib/supabaseAdmin';
 import { processSource } from '../lib/crawler/engine';
+import { Source } from '../types';
 
 async function run() {
     console.log('--- Starting Crawler Run ---');
@@ -23,9 +24,9 @@ async function run() {
     console.log(`Found ${sources.length} sources.`);
 
     // 2. Process each
+    // 2. Process each
     for (const source of sources) {
-        // Cast to any to satisfy TS for now as types might be loose
-        await processSource(source as any);
+        await processSource(source as Source);
     }
 
     console.log('--- Crawler Run Complete ---');
