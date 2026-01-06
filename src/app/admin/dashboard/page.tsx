@@ -172,20 +172,13 @@ function DraftsSection() {
             </div>
         </section>
     );
-}
-const [user, setUser] = useState<any>(null);
-const router = useRouter();
-
-useEffect(() => {
-    const checkUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            router.push('/admin');
-        } else {
-            setUser(user);
-        }
-    };
-    checkUser();
+    if (!user) {
+        router.push('/admin');
+    } else {
+        setUser(user);
+    }
+};
+checkUser();
 }, [router]);
 
 if (!user) return <div className="container" style={{ padding: '2rem' }}>Loading...</div>;
