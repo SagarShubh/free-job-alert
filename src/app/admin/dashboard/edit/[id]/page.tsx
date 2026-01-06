@@ -108,9 +108,9 @@ export default function EditJob() {
             const job = jobData as unknown as FetchedJob;
 
             // Hydration Logic:
-            let fees = job.job_fees?.length ? job.job_fees : [{ category_name: '', fee_amount: '' }];
+            const fees = job.job_fees?.length ? job.job_fees : [{ category_name: '', fee_amount: '' }];
             let dates = job.job_dates?.length ? job.job_dates : [{ event_description: '', event_date: '' }];
-            let vacancies = job.job_vacancies?.length ? job.job_vacancies : [{ post_name: '', total_posts: '', qualification: '' }];
+            const vacancies = job.job_vacancies?.length ? job.job_vacancies : [{ post_name: '', total_posts: '', qualification: '' }];
             let links = job.job_links?.length ? job.job_links : [{ link_title: 'Apply Online', url: '' }];
 
             // If important_links (JSON) exists from crawler

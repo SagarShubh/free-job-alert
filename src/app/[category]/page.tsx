@@ -1,4 +1,7 @@
-import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
+// ... (start of file)
+// ...
+<Link href="/" style={{ color: 'var(--primary)', fontWeight: 600 }}>&larr; Back to Home</Link>
 import JobCard from '@/components/ui/JobCard';
 import styles from '@/app/page.module.css'; // Reusing Home styles for consistency
 import { notFound } from 'next/navigation';
