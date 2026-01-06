@@ -1,5 +1,7 @@
 export type JobStatus = 'draft' | 'published' | 'archived';
 
+export type PostType = 'job_notification' | 'admit_card' | 'result';
+
 export interface JobPost {
     id?: string; // Optional for new drafts
     title: string;
@@ -23,6 +25,7 @@ export interface JobPost {
     status: JobStatus;
     sourceUrl?: string; // Where this was scraped from
     aiConfidence?: number; // 0-1 score
+    postType?: PostType;
     createdAt?: string;
 }
 

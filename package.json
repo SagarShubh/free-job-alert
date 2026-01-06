@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "crawler": "npx tsx src/scripts/run-crawler.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
