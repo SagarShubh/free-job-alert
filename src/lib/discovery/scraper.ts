@@ -66,7 +66,8 @@ export async function scrapeJobPage(url: string): Promise<ScrapeResult> {
             }
         };
 
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { success: false, error: errorMessage };
     }
 }

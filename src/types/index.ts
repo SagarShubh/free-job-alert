@@ -34,3 +34,14 @@ export interface ScrapedData {
     rawText: string;
     sourceUrl: string;
 }
+
+export interface Source {
+    id: string;
+    name: string;
+    url: string;
+    target_type: PostType;
+    status: 'active' | 'blocked' | 'error';
+    pattern?: string;
+    last_checked_at?: string;
+    error_log?: string;
+}

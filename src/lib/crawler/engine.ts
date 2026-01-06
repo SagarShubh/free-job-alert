@@ -1,14 +1,7 @@
 import { supabaseAdmin } from '../supabaseAdmin';
 import { draftJobFromText } from '../ai/drafter';
 import * as cheerio from 'cheerio';
-import { PostType } from '../../types';
-
-interface Source {
-    id: string;
-    url: string;
-    target_type: PostType;
-    pattern?: string;
-}
+import { PostType, Source } from '../../types';
 
 export async function processSource(source: Source) {
     console.log(`Checking source: ${source.url} (${source.target_type})`);
