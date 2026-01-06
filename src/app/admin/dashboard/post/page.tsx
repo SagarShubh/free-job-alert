@@ -79,7 +79,7 @@ export default function PostJob() {
         });
     };
 
-    const addItem = (section: keyof FormData, template: any) => {
+    const addItem = (section: keyof FormData, template: JobFee | JobDate | JobVacancy | JobLink) => {
         setFormData(prev => {
             const list = prev[section];
             if (!Array.isArray(list)) return prev;

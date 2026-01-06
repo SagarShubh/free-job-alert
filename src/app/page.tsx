@@ -17,7 +17,9 @@ export default async function Home() {
     .limit(6);
 
   // 2. Fetch Latest Updates (All Jobs)
-  const { data: latestJobs } = await supabase
+  // 2. Fetch Latest Updates (All Jobs)
+  // const { data: latestJobs } = await supabase... (Unused)
+  await supabase
     .from('jobs')
     .select('title, slug, organization, post_date, total_vacancy, is_featured')
     .order('post_date', { ascending: false })

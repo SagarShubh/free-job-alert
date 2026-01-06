@@ -10,7 +10,7 @@ type SmartTableProps<T> = {
     data: T[];
 };
 
-export default function SmartTable<T extends Record<string, any>>({ columns, data }: SmartTableProps<T>) {
+export default function SmartTable<T extends Record<string, unknown>>({ columns, data }: SmartTableProps<T>) {
     return (
         <div className={styles.tableWrapper}>
             <table className={styles.table}>
@@ -26,7 +26,7 @@ export default function SmartTable<T extends Record<string, any>>({ columns, dat
                         <tr key={rowIndex}>
                             {columns.map((col) => (
                                 <td key={`${rowIndex}-${col.accessor as string}`} data-label={col.header}>
-                                    {row[col.accessor]}
+                                    {(row as any)[col.accessor]}
                                 </td>
                             ))}
                         </tr>
