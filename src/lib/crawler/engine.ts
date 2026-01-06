@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../supabaseAdmin';
 import { draftJobFromText } from '../ai/drafter';
 import * as cheerio from 'cheerio';
-import { PostType } from '@/types';
+import { PostType } from '../../types';
 
 interface Source {
     id: string;
@@ -20,7 +20,7 @@ export async function processSource(source: Source) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html'
             },
-            next: { revalidate: 0 }
+            // next: { revalidate: 0 } // 'next' is not valid in standard fetch, removing it to satisfy tsx/node
         });
 
         if (!response.ok) {
@@ -124,7 +124,7 @@ async function processCandidate(url: string, source: Source) {
         const uniqueSlug = `${slugBase}-${Date.now()}`;
 
         // Save
-        const { error } = await supabaseAdmin.from('jobs').insert(<any>{
+        const { data: savedJob, error: saveError } = await supabaseAdmin.from('jobs').insert(<any>{
             title: draft.title,
             slug: uniqueSlug,
             organization: draft.organization,
@@ -148,10 +148,24 @@ async function processCandidate(url: string, source: Source) {
             status: 'draft',
             source_url: url,
             ai_confidence: draft.aiConfidence
-        });
+        })
+            .select()
+            .single();
 
-        if (error) throw error;
+        if (saveError) {
+            throw saveError;
+        }
+
         console.log(`✅ Draft created: ${draft.title}`);
+
+        // Send Notification
+        if (process.env.TELEGRAM_BOT_TOKEN) {
+            const msg = `📢 *New Draft Found!* \n\n*${draft.title}*\n_${draft.organization}_\n\nConfidence: ${draft.aiConfidence}\n[Open Admin Dashboard](${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://google.com'})`;
+
+            // Relative import to avoid alias issues
+            const { sendTelegramNotification } = await import('../notifications/telegram');
+            await sendTelegramNotification(msg);
+        }
 
     } catch (e: any) {
         console.error(`Failed to draft ${url}:`, e.message);
