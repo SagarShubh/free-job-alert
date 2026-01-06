@@ -1,23 +1,23 @@
 import styles from './SmartTable.module.css';
 
-type Column = {
+type Column<T> = {
     header: string;
-    accessor: string;
+    accessor: keyof T | string; // keyof T is ideal but string accessor support allows nested paths if handled
 };
 
-type SmartTableProps = {
-    columns: Column[];
-    data: any[];
+type SmartTableProps<T> = {
+    columns: Column<T>[];
+    data: T[];
 };
 
-export default function SmartTable({ columns, data }: SmartTableProps) {
+export default function SmartTable<T extends Record<string, any>>({ columns, data }: SmartTableProps<T>) {
     return (
         <div className={styles.tableWrapper}>
             <table className={styles.table}>
                 <thead>
                     <tr>
                         {columns.map((col) => (
-                            <th key={col.accessor}>{col.header}</th>
+                            <th key={col.accessor as string}>{col.header}</th>
                         ))}
                     </tr>
                 </thead>
@@ -25,7 +25,7 @@ export default function SmartTable({ columns, data }: SmartTableProps) {
                     {data.map((row, rowIndex) => (
                         <tr key={rowIndex}>
                             {columns.map((col) => (
-                                <td key={`${rowIndex}-${col.accessor}`} data-label={col.header}>
+                                <td key={`${rowIndex}-${col.accessor as string}`} data-label={col.header}>
                                     {row[col.accessor]}
                                 </td>
                             ))}

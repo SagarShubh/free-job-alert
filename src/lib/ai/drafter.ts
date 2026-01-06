@@ -119,8 +119,9 @@ export async function draftJobFromText(rawText: string, sourceUrl: string, postT
             postType,
             aiConfidence: 0.9
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('AI Drafting Error:', error);
-        throw new Error(`Failed to generate draft from AI: ${error.message}`);
+        throw new Error(`Failed to generate draft from AI: ${errorMessage}`);
     }
 }
