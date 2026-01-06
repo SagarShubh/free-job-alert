@@ -27,8 +27,8 @@ export default function EditJob() {
 
     useEffect(() => {
         const fetchJob = async () => {
-            const { id } = params;
-            const { data: job, error } = await supabase
+            const { id } = params as any; // Cast params to any to avoid string | string[] issues
+            const { data: jobData, error } = await supabase
                 .from('jobs')
                 .select(`
                     *,
@@ -40,11 +40,13 @@ export default function EditJob() {
                 .eq('id', id)
                 .single();
 
-            if (error || !job) {
+            if (error || !jobData) {
                 alert('Job not found');
                 router.push('/admin/dashboard');
                 return;
             }
+
+            const job = jobData as any; // Explicit cast to handle joins and new columns without type gen
 
             // Hydration Logic:
             // 1. If relational data exists, use it.
