@@ -118,9 +118,12 @@ export default function EditJob() {
                 try {
                     const parsed = typeof job.important_links === 'string' ? JSON.parse(job.important_links) : job.important_links;
                     if (Array.isArray(parsed)) {
-                        links = parsed.map((l: any) => ({ link_title: l.title || l.label || 'Link', url: l.url || '' }));
+                        links = parsed.map((l: { title?: string; label?: string; url?: string }) => ({
+                            link_title: l.title || l.label || 'Link',
+                            url: l.url || ''
+                        }));
                     }
-                } catch (e) {
+                } catch {
                     // Ignore parse error
                 }
             }
@@ -130,9 +133,12 @@ export default function EditJob() {
                 try {
                     const parsed = typeof job.important_dates === 'string' ? JSON.parse(job.important_dates) : job.important_dates;
                     if (Array.isArray(parsed)) {
-                        dates = parsed.map((d: any) => ({ event_description: d.type || 'Event', event_date: d.date || '' }));
+                        dates = parsed.map((d: { type?: string; date?: string }) => ({
+                            event_description: d.type || 'Event',
+                            event_date: d.date || ''
+                        }));
                     }
-                } catch (e) {
+                } catch {
                     // Ignore parse error
                 }
             }
@@ -174,11 +180,14 @@ export default function EditJob() {
         });
     };
 
-    const addItem = (section: keyof FormData, template: any) => {
+    const addItem = (section: keyof FormData, template: JobFee | JobDate | JobVacancy | JobLink) => {
         setFormData(prev => {
             const list = prev[section];
             if (!Array.isArray(list)) return prev;
-            return { ...prev, [section]: [...list, template] };
+            return {
+                ...prev,
+                [section]: [...list, template]
+            } as FormData; // Helper to satisfy TS
         });
     };
 
@@ -222,13 +231,9 @@ export default function EditJob() {
             ]);
 
             // 3. Insert fresh children
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const feesPayload = formData.fees.filter(f => f.category_name).map((f, i) => ({ ...f, job_id: id, display_order: i + 1 }));
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const datesPayload = formData.dates.filter(d => d.event_description).map((d, i) => ({ ...d, job_id: id, display_order: i + 1 }));
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const vacanciesPayload = formData.vacancies.filter(v => v.post_name).map((v, i) => ({ ...v, job_id: id, display_order: i + 1 }));
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const linksPayload = formData.links.filter(l => l.url).map((l, i) => ({ ...l, job_id: id, display_order: i + 1 }));
 
             await Promise.all([
@@ -241,8 +246,9 @@ export default function EditJob() {
             alert('Job Published Successfully! 🚀');
             router.push('/admin/dashboard');
 
-        } catch (error: any) {
-            alert('Error: ' + error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert('Error: ' + errorMessage);
         } finally {
             setSaving(false);
         }
