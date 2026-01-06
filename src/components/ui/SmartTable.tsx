@@ -10,7 +10,8 @@ type SmartTableProps<T> = {
     data: T[];
 };
 
-export default function SmartTable<T extends Record<string, unknown>>({ columns, data }: SmartTableProps<T>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function SmartTable<T extends any>({ columns, data }: SmartTableProps<T>) {
     return (
         <div className={styles.tableWrapper}>
             <table className={styles.table}>

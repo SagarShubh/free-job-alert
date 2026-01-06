@@ -20,6 +20,8 @@ interface DraftJob {
     organization: string;
     ai_confidence: number;
     created_at: string;
+    pattern_change_detected?: boolean;
+    pattern_change_summary?: string;
 }
 
 export default function Dashboard() {
@@ -156,17 +158,54 @@ function DraftsSection() {
                                 {draft.post_type?.toUpperCase() || 'JOB'}
                             </span>
                             <strong>{draft.title}</strong>
+                            {draft.pattern_change_detected && (
+                                <span style={{
+                                    marginLeft: '0.5rem',
+                                    backgroundColor: '#fee2e2',
+                                    color: '#dc2626',
+                                    padding: '0.1rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 'bold',
+                                    border: '1px solid #fecaca'
+                                }}>
+                                    ⚠️ Pattern Change
+                                </span>
+                            )}
                             <p style={{ margin: 0, fontSize: '0.8rem', color: '#666' }}>
                                 {draft.organization} • Confidence: {Math.round((draft.ai_confidence || 0) * 100)}%
+                                {draft.pattern_change_summary && <span style={{ display: 'block', color: '#dc2626' }}>Note: {draft.pattern_change_summary}</span>}
                             </p>
                         </div>
-                        <button
-                            className="btn btn-sm"
-                            style={{ background: 'var(--primary)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                            onClick={() => router.push(`/admin/dashboard/edit/${draft.id}`)}
-                        >
-                            Review & Publish
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                                className="btn btn-sm"
+                                style={{
+                                    background: '#fee2e2',
+                                    color: '#dc2626',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '4px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
+                                }}
+                                onClick={async () => {
+                                    if (!confirm('Are you sure you want to delete this draft permanently?')) return;
+                                    const { error } = await supabase.from('jobs').delete().eq('id', draft.id);
+                                    if (error) alert('Failed to delete: ' + error.message);
+                                    else setDrafts(prev => prev.filter(d => d.id !== draft.id));
+                                }}
+                            >
+                                🗑️ Delete
+                            </button>
+                            <button
+                                className="btn btn-sm"
+                                style={{ background: 'var(--primary)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                onClick={() => router.push(`/admin/dashboard/edit/${draft.id}`)}
+                            >
+                                Review & Publish
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>

@@ -122,6 +122,12 @@ export default function PostJob() {
 
             const jobId = job.id;
 
+            // Relaxed type to accept Supabase PostgrestBuilder which is thenable but not strictly a Promise in TS eyes
+            const throwOnError = async (promise: any) => {
+                const { error } = await promise;
+                if (error) throw error;
+            };
+
             // 2. Insert Children (Dates, Fees, Vacancies, Links)
             const feesPayload = formData.fees.map((f, i) => ({ ...f, job_id: jobId, display_order: i + 1 }));
             const datesPayload = formData.dates.map((d, i) => ({ ...d, job_id: jobId, display_order: i + 1 }));
@@ -129,10 +135,10 @@ export default function PostJob() {
             const linksPayload = formData.links.map((l, i) => ({ ...l, job_id: jobId, display_order: i + 1 }));
 
             await Promise.all([
-                formData.fees[0].category_name && supabase.from('job_fees').insert(feesPayload),
-                formData.dates[0].event_description && supabase.from('job_dates').insert(datesPayload),
-                formData.vacancies[0].post_name && supabase.from('job_vacancies').insert(vacanciesPayload),
-                formData.links[0].url && supabase.from('job_links').insert(linksPayload),
+                formData.fees[0].category_name ? throwOnError(supabase.from('job_fees').insert(feesPayload)) : Promise.resolve(),
+                formData.dates[0].event_description ? throwOnError(supabase.from('job_dates').insert(datesPayload)) : Promise.resolve(),
+                formData.vacancies[0].post_name ? throwOnError(supabase.from('job_vacancies').insert(vacanciesPayload)) : Promise.resolve(),
+                formData.links[0].url ? throwOnError(supabase.from('job_links').insert(linksPayload)) : Promise.resolve(),
             ]);
 
             alert('Job Posted Successfully!');

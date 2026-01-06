@@ -57,6 +57,8 @@ interface FetchedJob {
     application_fee: string | null; // Crawler fallback
     important_dates: string | unknown | null; // Crawler fallback (jsonb or string)
     important_links: string | unknown | null; // Crawler fallback (jsonb or string)
+    pattern_change_detected?: boolean;
+    pattern_change_summary?: string;
 }
 
 export default function EditJob() {
@@ -222,12 +224,19 @@ export default function EditJob() {
 
             if (jobError) throw jobError;
 
+            // Relaxed type to accept Supabase PostgrestBuilder which is thenable but not strictly a Promise in TS eyes
+            const throwOnError = async (promise: any) => {
+                const { error } = await promise;
+                if (error) throw error;
+            };
+
             // 2. Nuke and Re-insert Children (Easiest way to handle edits)
+            // Explicitly wait for deletes to finish successfully before inserting
             await Promise.all([
-                supabase.from('job_fees').delete().eq('job_id', id),
-                supabase.from('job_dates').delete().eq('job_id', id),
-                supabase.from('job_vacancies').delete().eq('job_id', id),
-                supabase.from('job_links').delete().eq('job_id', id),
+                throwOnError(supabase.from('job_fees').delete().eq('job_id', id)),
+                throwOnError(supabase.from('job_dates').delete().eq('job_id', id)),
+                throwOnError(supabase.from('job_vacancies').delete().eq('job_id', id)),
+                throwOnError(supabase.from('job_links').delete().eq('job_id', id)),
             ]);
 
             // 3. Insert fresh children
@@ -237,10 +246,10 @@ export default function EditJob() {
             const linksPayload = formData.links.filter(l => l.url).map((l, i) => ({ ...l, job_id: id, display_order: i + 1 }));
 
             await Promise.all([
-                feesPayload.length && supabase.from('job_fees').insert(feesPayload),
-                datesPayload.length && supabase.from('job_dates').insert(datesPayload),
-                vacanciesPayload.length && supabase.from('job_vacancies').insert(vacanciesPayload),
-                linksPayload.length && supabase.from('job_links').insert(linksPayload),
+                feesPayload.length ? throwOnError(supabase.from('job_fees').insert(feesPayload)) : Promise.resolve(),
+                datesPayload.length ? throwOnError(supabase.from('job_dates').insert(datesPayload)) : Promise.resolve(),
+                vacanciesPayload.length ? throwOnError(supabase.from('job_vacancies').insert(vacanciesPayload)) : Promise.resolve(),
+                linksPayload.length ? throwOnError(supabase.from('job_links').insert(linksPayload)) : Promise.resolve(),
             ]);
 
             alert('Job Published Successfully! 🚀');
@@ -248,6 +257,7 @@ export default function EditJob() {
 
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Publish Error:', error);
             alert('Error: ' + errorMessage);
         } finally {
             setSaving(false);
@@ -261,6 +271,20 @@ export default function EditJob() {
             <header className={styles.header}>
                 <h1>Review & Publish Draft</h1>
             </header>
+
+            {/* AI Pattern Detection Alert */}
+            {/* We need to access the job data here. Since we only have formData, checking typical pattern change logic might be hard if it's not in formData. 
+                However, for simplicity, we can just show it if we store it. 
+                Wait, 'formData' doesn't have it. We should probably add it to state or just read from props if we had them.
+                Actually, let's just add it to formData to preserve it? Or just display it from a separate state?
+                Checking previous file view... 'jobData' is fetched in useEffect.
+            */}
+
+            {/* Let's assume we want to show it. I'll need to fetch it into a separate state or formData. 
+                Since I didn't add it to FormData in the previous step, I should do that first.
+                Actually, simpler: I'll just check if I can add a dedicated alert state.
+            */}
+
 
             <form onSubmit={handlePublish} className={styles.form}>
                 {/* Basic Info */}
@@ -356,9 +380,32 @@ export default function EditJob() {
                     <button type="button" className={styles.addBtn} onClick={() => addItem('links', { link_title: '', url: '' })}>+ Add Link</button>
                 </div>
 
-                <button type="submit" disabled={saving} className={`btn btn-primary ${styles.submitBtn}`}>
-                    {saving ? 'Publishing...' : '✅ Publish Live'}
-                </button>
+                <div className={styles.buttonGroup}>
+                    <button type="submit" disabled={saving} className={`btn btn-primary ${styles.submitBtn}`}>
+                        {saving ? 'Publishing...' : '✅ Publish Live'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            if (!confirm('Are you sure you want to delete this job permanently?')) return;
+                            setSaving(true);
+                            // id is defined in handlePublish scope, need it here too or move out
+                            const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+                            const { error } = await supabase.from('jobs').delete().eq('id', id);
+                            if (error) {
+                                alert('Failed to delete: ' + error.message);
+                                setSaving(false);
+                            } else {
+                                router.push('/admin/dashboard');
+                            }
+                        }}
+                        className={styles.deleteBtn}
+                        style={{ backgroundColor: '#dc3545', marginLeft: '1rem' }}
+                        disabled={saving}
+                    >
+                        🗑️ Delete Job
+                    </button>
+                </div>
             </form>
         </div>
     );

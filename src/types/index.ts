@@ -21,6 +21,10 @@ export interface JobPost {
         url: string;
     }[];
 
+    // Phase 12: Insight Detection
+    pattern_change_detected?: boolean;
+    pattern_change_summary?: string;
+
     // Metadata for Phase 5 automation
     status: JobStatus;
     sourceUrl?: string; // Where this was scraped from

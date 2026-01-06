@@ -91,7 +91,9 @@ export async function draftJobFromText(rawText: string, sourceUrl: string, postT
           "ageLimit": "Age eligibility details",
           "qualification": "Education requirements",
           "importantDates": ["Start Date: ...", "End Date: ..."],
-          "importantLinks": [ { "label": "Apply Online", "url": "..." }, { "label": "Notification", "url": "..." } ]
+          "importantLinks": [ { "label": "Apply Online", "url": "..." }, { "label": "Notification", "url": "..." } ],
+          "pattern_change_detected": boolean, // Set to true ONLY if text explicitly mentions "Revised Syllabus", "New Exam Pattern", "Changes from previous year".
+          "pattern_change_summary": "string" // Brief explanation of the change if detected, else null
         }
     
         Rules:
@@ -99,6 +101,7 @@ export async function draftJobFromText(rawText: string, sourceUrl: string, postT
         2. Format dates as YYYY-MM-DD if possible, otherwise keep original text.
         3. Be precise with numbers (Vacancies, Fees).
         4. Do not halllucinate. Use only the provided text.
+        5. CRITICAL: Look for "Pattern Changes". If the notification says the syllabus or exam pattern has changed this year, set pattern_change_detected=true.
     
         RAW TEXT INPUT:
         ${rawText.slice(0, 20000)}
@@ -117,7 +120,9 @@ export async function draftJobFromText(rawText: string, sourceUrl: string, postT
             status: 'draft',
             sourceUrl,
             postType,
-            aiConfidence: 0.9
+            aiConfidence: 0.9,
+            pattern_change_detected: parsed.pattern_change_detected || false,
+            pattern_change_summary: parsed.pattern_change_summary || null
         };
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
