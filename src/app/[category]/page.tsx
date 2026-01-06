@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import JobCard from '@/components/ui/JobCard';
 import styles from '@/app/page.module.css';
 import { notFound } from 'next/navigation';
+import { isStateCode, STATE_CODES } from '@/lib/states';
 
 export const revalidate = 60;
 
@@ -24,8 +25,8 @@ const CATEGORY_MAP: Record<string, string> = {
     'teaching': 'teaching',
     'engineering': 'engineering',
     'police': 'police',
-    'railway': 'railway', // Assuming we add this later
-    'all-india': 'central', // Mapping /all-india to 'central' type
+    'railway': 'railway',
+    'all-india': 'central',
     'state': 'state',
 };
 
@@ -41,6 +42,16 @@ const CATEGORY_TITLES: Record<string, string> = {
 
 export async function generateMetadata({ params }: Props) {
     const { category } = await params;
+
+    // Check for State Code
+    if (isStateCode(category)) {
+        const stateName = STATE_CODES.find(s => s.code === category.toUpperCase())?.name || category;
+        return {
+            title: `${stateName} Govt Jobs 2025 - Apply Online`,
+            description: `Latest Government Jobs in ${stateName}. Find vacancies, notifications, and results for ${stateName}.`
+        };
+    }
+
     const title = CATEGORY_TITLES[category] || 'Government Jobs';
     return {
         title: `${title} 2025 - Apply Online`,
@@ -50,17 +61,35 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CategoryPage({ params }: Props) {
     const { category } = await params;
+
+    // Logic 1: Check if it's a known Job Category
     const dbCategory = CATEGORY_MAP[category];
 
-    if (!dbCategory) {
+    // Logic 2: Check if it's a State Code
+    const isState = isStateCode(category);
+
+    if (!dbCategory && !isState) {
         notFound();
     }
 
-    const { data } = await supabase
+    let query = supabase
         .from('jobs')
         .select('title, slug, organization, post_date, total_vacancy, is_featured')
-        .eq('job_type', dbCategory)
         .order('post_date', { ascending: false });
+
+    if (isState) {
+        // Query by state_code
+        // Note: We need to ensure capitalization matches (usually uppercase 'AP')
+        query = query.eq('state_code', category.toUpperCase());
+    } else {
+        // Query by job_type
+        query = query.eq('job_type', dbCategory);
+    }
+
+    const { data } = await query;
+    const title = isState
+        ? `${STATE_CODES.find(s => s.code === category.toUpperCase())?.name} Government Jobs`
+        : CATEGORY_TITLES[category]; // Fallback to map title
 
     const jobs = (data as unknown as DBJob[]) || [];
 
@@ -70,9 +99,9 @@ export default async function CategoryPage({ params }: Props) {
     return (
         <div className="container" style={{ padding: '3rem 0' }}>
             <header className={styles.sectionHeader} style={{ marginBottom: '3rem', flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>{CATEGORY_TITLES[category]}</h1>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>{title}</h1>
                 <p style={{ color: 'var(--secondary)' }}>
-                    Find the latest recruitment notifications for {CATEGORY_TITLES[category]}.
+                    Find the latest recruitment notifications for {title}.
                 </p>
             </header>
 

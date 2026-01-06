@@ -3,26 +3,31 @@ import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, useParams } from 'next/navigation';
 import styles from '../../post/page.module.css'; // Reusing styles
+import { STATE_CODES } from '@/lib/states';
 
 interface JobFee {
     category_name: string;
     fee_amount: string;
+    display_order?: number;
 }
 
 interface JobDate {
     event_description: string;
     event_date: string;
+    display_order?: number;
 }
 
 interface JobVacancy {
     post_name: string;
     total_posts: string;
     qualification: string;
+    display_order?: number;
 }
 
 interface JobLink {
     link_title: string;
     url: string;
+    display_order?: number;
 }
 
 interface FormData {
@@ -32,6 +37,7 @@ interface FormData {
     brief_info: string;
     total_vacancy: string;
     job_type: string;
+    state_code?: string;
     is_featured: boolean;
     fees: JobFee[];
     dates: JobDate[];
@@ -45,20 +51,19 @@ interface FetchedJob {
     slug: string;
     organization: string;
     brief_info: string | null;
-    description: string | null; // Crawler fallback
+    description: string | null;
     total_vacancy: string | null;
     job_type: string | null;
+    state_code: string | null;
     is_featured: boolean;
     status: string;
     job_fees: JobFee[];
     job_dates: JobDate[];
     job_vacancies: JobVacancy[];
     job_links: JobLink[];
-    application_fee: string | null; // Crawler fallback
-    important_dates: string | unknown | null; // Crawler fallback (jsonb or string)
-    important_links: string | unknown | null; // Crawler fallback (jsonb or string)
-    pattern_change_detected?: boolean;
-    pattern_change_summary?: string;
+    application_fee: string | null;
+    important_dates: string | unknown | null;
+    important_links: string | unknown | null;
 }
 
 export default function EditJob() {
@@ -67,7 +72,6 @@ export default function EditJob() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    // Identical State Structure to PostJob
     const [formData, setFormData] = useState<FormData>({
         title: '',
         slug: '',
@@ -75,6 +79,7 @@ export default function EditJob() {
         brief_info: '',
         total_vacancy: '',
         job_type: 'state',
+        state_code: '',
         is_featured: false,
         fees: [{ category_name: '', fee_amount: '' }],
         dates: [{ event_description: '', event_date: '' }],
@@ -84,7 +89,6 @@ export default function EditJob() {
 
     useEffect(() => {
         const fetchJob = async () => {
-            // params is { id: string | string[] }
             const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
             if (!id) return;
@@ -109,49 +113,43 @@ export default function EditJob() {
 
             const job = jobData as unknown as FetchedJob;
 
-            // Hydration Logic:
             const fees = job.job_fees?.length ? job.job_fees : [{ category_name: '', fee_amount: '' }];
             let dates = job.job_dates?.length ? job.job_dates : [{ event_description: '', event_date: '' }];
             const vacancies = job.job_vacancies?.length ? job.job_vacancies : [{ post_name: '', total_posts: '', qualification: '' }];
             let links = job.job_links?.length ? job.job_links : [{ link_title: 'Apply Online', url: '' }];
 
-            // If important_links (JSON) exists from crawler
+            // Legacy JSON parsing fallback logic
             if (job.status === 'draft' && !job.job_links?.length && job.important_links) {
                 try {
                     const parsed = typeof job.important_links === 'string' ? JSON.parse(job.important_links) : job.important_links;
                     if (Array.isArray(parsed)) {
-                        links = parsed.map((l: { title?: string; label?: string; url?: string }) => ({
+                        links = parsed.map((l: any) => ({
                             link_title: l.title || l.label || 'Link',
                             url: l.url || ''
                         }));
                     }
-                } catch {
-                    // Ignore parse error
-                }
+                } catch { }
             }
-
-            // If important_dates (JSON) exists
             if (job.status === 'draft' && !job.job_dates?.length && job.important_dates) {
                 try {
                     const parsed = typeof job.important_dates === 'string' ? JSON.parse(job.important_dates) : job.important_dates;
                     if (Array.isArray(parsed)) {
-                        dates = parsed.map((d: { type?: string; date?: string }) => ({
+                        dates = parsed.map((d: any) => ({
                             event_description: d.type || 'Event',
                             event_date: d.date || ''
                         }));
                     }
-                } catch {
-                    // Ignore parse error
-                }
+                } catch { }
             }
 
             setFormData({
                 title: job.title || '',
                 slug: job.slug || '',
                 organization: job.organization || '',
-                brief_info: job.brief_info || job.description || '', // Fallback to description from crawler
+                brief_info: job.brief_info || job.description || '',
                 total_vacancy: job.total_vacancy || '',
                 job_type: job.job_type || 'state',
+                state_code: job.state_code || '',
                 is_featured: job.is_featured || false,
                 fees,
                 dates,
@@ -164,8 +162,6 @@ export default function EditJob() {
         fetchJob();
     }, [params, router]);
 
-
-    // --- Handlers (Copied from PostJob, adapted) ---
     const handleBasicChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -175,8 +171,6 @@ export default function EditJob() {
         setFormData(prev => {
             const list = prev[section];
             if (!Array.isArray(list)) return prev;
-
-            // Allow mutation for deep update or prefer immutability:
             const updated = list.map((item, i) => i === index ? { ...item, [field]: value } : item);
             return { ...prev, [section]: updated };
         });
@@ -186,10 +180,7 @@ export default function EditJob() {
         setFormData(prev => {
             const list = prev[section];
             if (!Array.isArray(list)) return prev;
-            return {
-                ...prev,
-                [section]: [...list, template]
-            } as FormData; // Helper to satisfy TS
+            return { ...prev, [section]: [...list, template] } as FormData;
         });
     };
 
@@ -207,7 +198,6 @@ export default function EditJob() {
         const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
         try {
-            // 1. Update Main Job
             const { error: jobError } = await supabase
                 .from('jobs')
                 .update({
@@ -217,21 +207,20 @@ export default function EditJob() {
                     brief_info: formData.brief_info,
                     total_vacancy: formData.total_vacancy,
                     job_type: formData.job_type,
+                    state_code: formData.job_type === 'state' ? formData.state_code : null,
                     is_featured: formData.is_featured,
-                    status: 'published' // PUBLISH!
+                    status: 'published'
                 })
                 .eq('id', id);
 
             if (jobError) throw jobError;
 
-            // Relaxed type to accept Supabase PostgrestBuilder which is thenable but not strictly a Promise in TS eyes
+            // Relaxed type to accept Supabase PostgrestBuilder
             const throwOnError = async (promise: any) => {
                 const { error } = await promise;
                 if (error) throw error;
             };
 
-            // 2. Nuke and Re-insert Children (Easiest way to handle edits)
-            // Explicitly wait for deletes to finish successfully before inserting
             await Promise.all([
                 throwOnError(supabase.from('job_fees').delete().eq('job_id', id)),
                 throwOnError(supabase.from('job_dates').delete().eq('job_id', id)),
@@ -239,7 +228,6 @@ export default function EditJob() {
                 throwOnError(supabase.from('job_links').delete().eq('job_id', id)),
             ]);
 
-            // 3. Insert fresh children
             const feesPayload = formData.fees.filter(f => f.category_name).map((f, i) => ({ ...f, job_id: id, display_order: i + 1 }));
             const datesPayload = formData.dates.filter(d => d.event_description).map((d, i) => ({ ...d, job_id: id, display_order: i + 1 }));
             const vacanciesPayload = formData.vacancies.filter(v => v.post_name).map((v, i) => ({ ...v, job_id: id, display_order: i + 1 }));
@@ -255,10 +243,9 @@ export default function EditJob() {
             alert('Job Published Successfully! 🚀');
             router.push('/admin/dashboard');
 
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        } catch (error: any) {
             console.error('Publish Error:', error);
-            alert('Error: ' + errorMessage);
+            alert('Error: ' + error.message);
         } finally {
             setSaving(false);
         }
@@ -272,22 +259,9 @@ export default function EditJob() {
                 <h1>Review & Publish Draft</h1>
             </header>
 
-            {/* AI Pattern Detection Alert */}
-            {/* We need to access the job data here. Since we only have formData, checking typical pattern change logic might be hard if it's not in formData. 
-                However, for simplicity, we can just show it if we store it. 
-                Wait, 'formData' doesn't have it. We should probably add it to state or just read from props if we had them.
-                Actually, let's just add it to formData to preserve it? Or just display it from a separate state?
-                Checking previous file view... 'jobData' is fetched in useEffect.
-            */}
-
-            {/* Let's assume we want to show it. I'll need to fetch it into a separate state or formData. 
-                Since I didn't add it to FormData in the previous step, I should do that first.
-                Actually, simpler: I'll just check if I can add a dedicated alert state.
-            */}
-
-
             <form onSubmit={handlePublish} className={styles.form}>
-                {/* Basic Info */}
+
+                {/* Basic Details */}
                 <div className={styles.section}>
                     <h3>Basic Details</h3>
                     <div className={styles.field}>
@@ -316,6 +290,19 @@ export default function EditJob() {
                                 <option value="police">Police/Defence</option>
                             </select>
                         </div>
+
+                        {formData.job_type === 'state' && (
+                            <div className={styles.field}>
+                                <label>State</label>
+                                <select name="state_code" value={formData.state_code || ''} onChange={handleBasicChange} required>
+                                    <option value="">-- Select State --</option>
+                                    {STATE_CODES.map(s => (
+                                        <option key={s.code} value={s.code}>{s.name} ({s.code})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                         <div className={styles.field}>
                             <label>Total Vacancy</label>
                             <input name="total_vacancy" value={formData.total_vacancy} onChange={handleBasicChange} />
@@ -340,7 +327,7 @@ export default function EditJob() {
                     <button type="button" className={styles.addBtn} onClick={() => addItem('fees', { category_name: '', fee_amount: '' })}>+ Add Fee</button>
                 </div>
 
-                {/* Important Dates */}
+                {/* Dates */}
                 <div className={styles.section}>
                     <h3>Important Dates</h3>
                     {formData.dates.map((item, index) => (
@@ -384,30 +371,18 @@ export default function EditJob() {
                     <button type="submit" disabled={saving} className={`btn btn-primary ${styles.submitBtn}`}>
                         {saving ? 'Publishing...' : '✅ Publish Live'}
                     </button>
-                    <button
-                        type="button"
-                        onClick={async () => {
-                            if (!confirm('Are you sure you want to delete this job permanently?')) return;
-                            setSaving(true);
-                            // id is defined in handlePublish scope, need it here too or move out
-                            const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-                            const { error } = await supabase.from('jobs').delete().eq('id', id);
-                            if (error) {
-                                alert('Failed to delete: ' + error.message);
-                                setSaving(false);
-                            } else {
-                                router.push('/admin/dashboard');
-                            }
-                        }}
-                        className={styles.deleteBtn}
-                        style={{ backgroundColor: '#dc3545', marginLeft: '1rem' }}
-                        disabled={saving}
-                    >
+                    <button type="button" onClick={async () => {
+                        if (!confirm('Are you sure?')) return;
+                        setSaving(true);
+                        const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+                        await supabase.from('jobs').delete().eq('id', id);
+                        router.push('/admin/dashboard');
+                    }} className={styles.deleteBtn} style={{ backgroundColor: '#dc3545', marginLeft: '1rem' }} disabled={saving}>
                         🗑️ Delete Job
                     </button>
                 </div>
+
             </form>
         </div>
     );
 }
-

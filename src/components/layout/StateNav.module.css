@@ -1,0 +1,58 @@
+.stateNav {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--glass-border);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 1200px; /* Match main container max-width if possible */
+}
+
+.link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.link:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Hide scrollbar for clean look but allow scrolling */
+.stateNav::-webkit-scrollbar {
+    height: 4px;
+}
+
+.stateNav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.stateNav::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}

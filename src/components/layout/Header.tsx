@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import styles from './Header.module.css';
 import SearchBar from '../ui/SearchBar';
+import StateNav from './StateNav';
 
+// Enhanced Nav Items with "Pill" feel logic to be improved in CSS
 const NAV_ITEMS = [
     { label: 'Home', href: '/' },
     { label: 'All India', href: '/all-india' },
@@ -9,17 +11,20 @@ const NAV_ITEMS = [
     { label: 'Bank', href: '/bank' },
     { label: 'Teaching', href: '/teaching' },
     { label: 'Engineering', href: '/engineering' },
+    { label: 'Police', href: '/police' },
 ];
 
 export default function Header() {
     return (
         <header className={styles.header}>
-            <div className={`container ${styles.navContainer}`}>
-                <Link href="/" className={styles.logo}>
-                    GovJob<span>Alert</span>
-                </Link>
+            <div className={`container ${styles.mainRow}`}>
+                <div className={styles.logoSection}>
+                    <Link href="/" className={styles.logo}>
+                        GovJob<span>Alert</span>
+                    </Link>
+                </div>
 
-                <nav>
+                <nav className={styles.navSection}>
                     <ul className={styles.navLinks}>
                         {NAV_ITEMS.map((item) => (
                             <li key={item.label}>
@@ -33,11 +38,15 @@ export default function Header() {
 
                 <div className={styles.actions}>
                     <SearchBar />
-                    <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
-                        App
+                    <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '20px' }}>
+                        Get App
                     </button>
                 </div>
             </div>
+
+            {/* Second Row: State Navigation */}
+            <StateNav />
         </header>
     );
 }
+

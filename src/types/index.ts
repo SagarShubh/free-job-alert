@@ -25,6 +25,9 @@ export interface JobPost {
     pattern_change_detected?: boolean;
     pattern_change_summary?: string;
 
+    // Phase 10: State Navigation
+    state_code?: string; // ISO Code (AP, TS, etc.)
+
     // Metadata for Phase 5 automation
     status: JobStatus;
     sourceUrl?: string; // Where this was scraped from

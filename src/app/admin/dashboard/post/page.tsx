@@ -3,6 +3,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import { STATE_CODES } from '@/lib/states';
 
 interface JobFee {
     category_name: string;
@@ -32,6 +33,7 @@ interface FormData {
     brief_info: string;
     total_vacancy: string;
     job_type: string;
+    state_code?: string; // Phase 10
     is_featured: boolean;
     fees: JobFee[];
     dates: JobDate[];
@@ -49,6 +51,7 @@ export default function PostJob() {
         brief_info: '',
         total_vacancy: '',
         job_type: 'state',
+        state_code: '',
         is_featured: false,
         fees: [{ category_name: '', fee_amount: '' }],
         dates: [{ event_description: '', event_date: '' }],
@@ -86,7 +89,7 @@ export default function PostJob() {
             return {
                 ...prev,
                 [section]: [...list, template]
-            };
+            } as FormData;
         });
     };
 
@@ -113,6 +116,7 @@ export default function PostJob() {
                     brief_info: formData.brief_info,
                     total_vacancy: formData.total_vacancy,
                     job_type: formData.job_type,
+                    state_code: formData.job_type === 'state' ? formData.state_code : null, // Save state code
                     is_featured: formData.is_featured
                 })
                 .select()
@@ -189,13 +193,26 @@ export default function PostJob() {
                                 <option value="police">Police/Defence</option>
                             </select>
                         </div>
+
+                        {formData.job_type === 'state' && (
+                            <div className={styles.field}>
+                                <label>State</label>
+                                <select name="state_code" value={formData.state_code || ''} onChange={handleBasicChange} required>
+                                    <option value="">-- Select State --</option>
+                                    {STATE_CODES.map(s => (
+                                        <option key={s.code} value={s.code}>{s.name} ({s.code})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                         <div className={styles.field}>
                             <label>Total Vacancy</label>
                             <input name="total_vacancy" value={formData.total_vacancy} onChange={handleBasicChange} placeholder="e.g. 500+" />
                         </div>
                     </div>
                     <div className={styles.field} style={{ marginTop: '1rem' }}>
-                        <label>Brief Info</label>
+                        <label>Brief Info (Markdown supported)</label>
                         <textarea name="brief_info" rows={3} value={formData.brief_info} onChange={handleBasicChange} />
                     </div>
                 </div>
@@ -260,7 +277,7 @@ export default function PostJob() {
                     {formData.links.map((item, index) => (
                         <div key={index} className={styles.row}>
                             <div className={styles.field} style={{ flex: 1 }}>
-                                <input placeholder="Link Title" value={item.link_title} onChange={(e) => handleArrayChange('links', index, 'link_title', e.target.value)} />
+                                <input placeholder="Title" value={item.link_title} onChange={(e) => handleArrayChange('links', index, 'link_title', e.target.value)} />
                             </div>
                             <div className={styles.field} style={{ flex: 2 }}>
                                 <input placeholder="URL" value={item.url} onChange={(e) => handleArrayChange('links', index, 'url', e.target.value)} />
@@ -279,4 +296,3 @@ export default function PostJob() {
         </div>
     );
 }
-
