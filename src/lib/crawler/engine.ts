@@ -70,22 +70,23 @@ export async function processSource(source: Source) {
         // 5. Update Source Status
         await supabaseAdmin
             .from('sources')
-            .update(<any>{
+            .update({
                 status: 'active',
                 last_checked_at: new Date().toISOString(),
                 error_log: null
             })
             .eq('id', source.id);
 
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error(`Error processing source ${source.url}:`, error);
 
         await supabaseAdmin
             .from('sources')
-            .update(<any>{
+            .update({
                 status: 'error',
                 last_checked_at: new Date().toISOString(),
-                error_log: error.message
+                error_log: errorMessage
             })
             .eq('id', source.id);
     }
@@ -124,7 +125,7 @@ async function processCandidate(url: string, source: Source) {
         const uniqueSlug = `${slugBase}-${Date.now()}`;
 
         // Save
-        const { data: savedJob, error: saveError } = await supabaseAdmin.from('jobs').insert(<any>{
+        const { error: saveError } = await supabaseAdmin.from('jobs').insert({
             title: draft.title,
             slug: uniqueSlug,
             organization: draft.organization,
@@ -132,11 +133,7 @@ async function processCandidate(url: string, source: Source) {
             total_vacancy: draft.totalVacancy || 'Not Specified',
             brief_info: draft.description, // Mapping description to brief_info
 
-            // New Columns (Assuming specific tables handle details, but we store summary here too?)
-            // Note: In Phase 5 we had specific tables. For simplicity in Phase 6 Crawler, 
-            // we are just inserting the Main Job record. The detailed tables (job_fees etc) 
-            // would need standard CRUD logic or we can store JSON for now if we updated schema.
-            // Wait, previous verification showed we added columns to 'jobs': description, etc.
+            // New Columns
             description: draft.description,
             application_fee: draft.applicationFee,
             age_limit: draft.ageLimit,
@@ -167,7 +164,8 @@ async function processCandidate(url: string, source: Source) {
             await sendTelegramNotification(msg);
         }
 
-    } catch (e: any) {
-        console.error(`Failed to draft ${url}:`, e.message);
+    } catch (e: unknown) {
+        const errorMsg = e instanceof Error ? e.message : 'Unknown processing error';
+        console.error(`Failed to draft ${url}:`, errorMsg);
     }
 }
