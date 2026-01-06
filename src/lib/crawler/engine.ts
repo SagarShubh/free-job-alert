@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../supabaseAdmin';
 import { draftJobFromText } from '../ai/drafter';
 import * as cheerio from 'cheerio';
-import { PostType, Source } from '../../types';
+import { Source } from '../../types';
 
 export async function processSource(source: Source) {
     console.log(`Checking source: ${source.url} (${source.target_type})`);
@@ -31,7 +31,7 @@ export async function processSource(source: Source) {
                 try {
                     const absoluteUrl = new URL(href, source.url).toString();
                     links.push(absoluteUrl);
-                } catch (e) {
+                } catch {
                     // Invalid URL, ignore
                 }
             }

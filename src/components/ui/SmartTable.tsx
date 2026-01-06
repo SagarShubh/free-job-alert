@@ -26,6 +26,7 @@ export default function SmartTable<T extends Record<string, unknown>>({ columns,
                         <tr key={rowIndex}>
                             {columns.map((col) => (
                                 <td key={`${rowIndex}-${col.accessor as string}`} data-label={col.header}>
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     {(row as any)[col.accessor]}
                                 </td>
                             ))}
