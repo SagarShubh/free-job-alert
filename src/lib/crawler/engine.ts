@@ -70,7 +70,7 @@ export async function processSource(source: Source) {
         // 5. Update Source Status
         await supabaseAdmin
             .from('sources')
-            .update({
+            .update(<any>{
                 status: 'active',
                 last_checked_at: new Date().toISOString(),
                 error_log: null
@@ -82,7 +82,7 @@ export async function processSource(source: Source) {
 
         await supabaseAdmin
             .from('sources')
-            .update({
+            .update(<any>{
                 status: 'error',
                 last_checked_at: new Date().toISOString(),
                 error_log: error.message
@@ -124,7 +124,7 @@ async function processCandidate(url: string, source: Source) {
         const uniqueSlug = `${slugBase}-${Date.now()}`;
 
         // Save
-        const { error } = await supabaseAdmin.from('jobs').insert({
+        const { error } = await supabaseAdmin.from('jobs').insert(<any>{
             title: draft.title,
             slug: uniqueSlug,
             organization: draft.organization,
