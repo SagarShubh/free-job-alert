@@ -27,7 +27,7 @@ async function seed() {
     for (const source of sources) {
         const { error } = await supabaseAdmin
             .from('sources')
-            .upsert(source, { onConflict: 'url' });
+            .upsert(<any>source, { onConflict: 'url' });
 
         if (error) console.error(`Failed to seed ${source.name}:`, error.message);
         else console.log(`✅ Seeded: ${source.name}`);

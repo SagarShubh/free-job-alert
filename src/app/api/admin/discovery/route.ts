@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
         const { data: savedJob, error: saveError } = await supabaseAdmin
             .from('jobs')
-            .insert({
+            .insert(<any>{
                 title: jobDraft.title,
                 slug: uniqueSlug,
                 organization: jobDraft.organization,
