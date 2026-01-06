@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 // WARNING: Never import this in client-side components!
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 // Must be a valid JWT format (header.payload.signature) to pass supabase-js validation
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYxNjQ0OTkyMiwiZXhwIjo0NzcyMDkwOTIyfQ.dummy_signature_for_build_process_only';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!supabaseUrl || !supabaseServiceKey) {
     if (process.env.NODE_ENV === 'production') {
