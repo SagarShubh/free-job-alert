@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +43,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <ThemeProvider defaultTheme="system" storageKey="govjob-theme">
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <MobileBottomNav />
+        </ThemeProvider>
       </body>
     </html>
   );

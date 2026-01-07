@@ -1,3 +1,5 @@
+import './setup-env';
+
 import { supabaseAdmin } from '../lib/supabaseAdmin';
 import { processSource } from '../lib/crawler/engine';
 import { Source } from '../types';

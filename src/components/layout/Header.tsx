@@ -2,6 +2,7 @@ import Link from 'next/link';
 import styles from './Header.module.css';
 import SearchBar from '../ui/SearchBar';
 import StateNav from './StateNav';
+import ThemeToggle from '../ui/ThemeToggle';
 
 // Enhanced Nav Items with "Pill" feel logic to be improved in CSS
 const NAV_ITEMS = [
@@ -38,6 +39,7 @@ export default function Header() {
 
                 <div className={styles.actions}>
                     <SearchBar />
+                    <ThemeToggle />
                     <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '20px' }}>
                         Get App
                     </button>

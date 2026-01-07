@@ -1,6 +1,6 @@
 export type JobStatus = 'draft' | 'published' | 'archived';
 
-export type PostType = 'job_notification' | 'admit_card' | 'result';
+export type PostType = 'job' | 'admit_card' | 'result';
 
 export interface JobPost {
     id?: string; // Optional for new drafts
@@ -51,4 +51,5 @@ export interface Source {
     pattern?: string;
     last_checked_at?: string;
     error_log?: string;
+    region?: string;
 }

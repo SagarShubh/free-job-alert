@@ -134,6 +134,9 @@ async function processCandidate(url: string, source: Source) {
             important_dates: draft.importantDates,
             important_links: draft.importantLinks,
 
+            // Map Source Region to Job State Code
+            state_code: source.region !== 'All India' ? source.region : null,
+
             post_type: source.target_type,
             status: 'draft',
             source_url: url,

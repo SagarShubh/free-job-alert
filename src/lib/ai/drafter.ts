@@ -8,13 +8,13 @@ const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_AP
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
 const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.0-flash',
     generationConfig: {
         responseMimeType: "application/json",
     }
 });
 
-export async function draftJobFromText(rawText: string, sourceUrl: string, postType: 'job_notification' | 'admit_card' | 'result' = 'job_notification'): Promise<JobPost> {
+export async function draftJobFromText(rawText: string, sourceUrl: string, postType: 'job' | 'admit_card' | 'result' = 'job'): Promise<JobPost> {
     if (!apiKey) {
         throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY environment variable');
     }
