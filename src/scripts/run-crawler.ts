@@ -29,6 +29,8 @@ async function run() {
     // 2. Process each
     for (const source of sources) {
         await processSource(source as Source);
+        // Rate limit protection: 5s delay between sources
+        await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
     console.log('--- Crawler Run Complete ---');

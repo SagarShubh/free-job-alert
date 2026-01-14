@@ -48,6 +48,11 @@ export async function processSource(source: Source) {
             // Exclude common junk
             const isJunk = lowerLink.includes('javascript:') || lowerLink.includes('#') || lowerLink.includes('archive');
 
+            // Specific filter for FreeJobAlert to avoid listing pages
+            if (source.url.includes('freejobalert.com')) {
+                return matchesKeyword && !isJunk && link.includes('/articles/');
+            }
+
             return matchesKeyword && matchesPattern && !isJunk;
         });
 
@@ -58,6 +63,9 @@ export async function processSource(source: Source) {
         // 4. Process Candidates
         for (const url of uniqueCandidates) {
             await processCandidate(url, source);
+            // Gemini Free Tier Rate Limit: 20s delay between calls
+            console.log('Waiting 20s to respect API rate limits...');
+            await new Promise(resolve => setTimeout(resolve, 20000));
         }
 
         // 5. Update Source Status
@@ -106,12 +114,20 @@ async function processCandidate(url: string, source: Source) {
         const html = await res.text();
         const $ = cheerio.load(html);
 
-        // Remove boilerplate
-        $('nav, footer, header, script, style').remove();
-        const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 15000);
+        // Detect if FreeJobAlert
+        let draft;
+        if (url.includes('freejobalert.com')) {
+            console.log('Using Manual Parser for FreeJobAlert...');
+            const { manualDraftFreeJobAlert } = await import('./parsers/freejobalert');
+            draft = await manualDraftFreeJobAlert(html, url);
+        } else {
+            // Remove boilerplate for AI
+            $('nav, footer, header, script, style').remove();
+            const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 15000);
 
-        // Draft with AI
-        const draft = await draftJobFromText(text, url, source.target_type);
+            // Draft with AI
+            draft = await draftJobFromText(text, url, source.target_type);
+        }
 
         // Generate Slug
         const slugBase = draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -137,8 +153,8 @@ async function processCandidate(url: string, source: Source) {
             // Map Source Region to Job State Code
             state_code: source.region !== 'All India' ? source.region : null,
 
-            post_type: source.target_type,
-            status: 'draft',
+            post_type: draft.postType || source.target_type,
+            status: 'published',
             source_url: url,
             ai_confidence: draft.aiConfidence
         })
@@ -161,7 +177,8 @@ async function processCandidate(url: string, source: Source) {
         }
 
     } catch (e: unknown) {
-        const errorMsg = e instanceof Error ? e.message : 'Unknown processing error';
-        console.error(`Failed to draft ${url}:`, errorMsg);
+        console.error(`Failed to draft ${url}:`, e);
+        // const errorMsg = e instanceof Error ? e.message : 'Unknown processing error';
+        // console.error(`Failed to draft ${url}:`, errorMsg);
     }
 }

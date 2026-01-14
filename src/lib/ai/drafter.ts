@@ -14,7 +14,7 @@ const model = genAI.getGenerativeModel({
     }
 });
 
-export async function draftJobFromText(rawText: string, sourceUrl: string, postType: 'job' | 'admit_card' | 'result' = 'job'): Promise<JobPost> {
+export async function draftJobFromText(rawText: string, sourceUrl: string, postType: 'job_notification' | 'admit_card' | 'result' = 'job_notification'): Promise<JobPost> {
     if (!apiKey) {
         throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY environment variable');
     }
@@ -108,25 +108,41 @@ export async function draftJobFromText(rawText: string, sourceUrl: string, postT
       `;
     }
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        const parsed = JSON.parse(text);
+    let retries = 0;
+    const maxRetries = 3;
 
-        // Return with default status 'draft'
-        return {
-            ...parsed,
-            status: 'draft',
-            sourceUrl,
-            postType,
-            aiConfidence: 0.9,
-            pattern_change_detected: parsed.pattern_change_detected || false,
-            pattern_change_summary: parsed.pattern_change_summary || null
-        };
-    } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('AI Drafting Error:', error);
-        throw new Error(`Failed to generate draft from AI: ${errorMessage}`);
+    while (retries <= maxRetries) {
+        try {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            const parsed = JSON.parse(text);
+
+            // Return with default status 'draft'
+            return {
+                ...parsed,
+                status: 'draft',
+                sourceUrl,
+                postType,
+                aiConfidence: 0.9,
+                pattern_change_detected: parsed.pattern_change_detected || false,
+                pattern_change_summary: parsed.pattern_change_summary || null
+            };
+        } catch (error: any) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+            // Check for 429 or Quota Exceeded
+            if (errorMessage.includes('429') || errorMessage.includes('Quota exceeded')) {
+                console.warn(`⚠️ Gemini Rate Limit Hit (Attempt ${retries + 1}/${maxRetries + 1}). Waiting 30s...`);
+                await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s
+                retries++;
+                continue;
+            }
+
+            console.error('AI Drafting Error:', error);
+            throw new Error(`Failed to generate draft from AI: ${errorMessage}`);
+        }
     }
+
+    throw new Error(`Failed to generate draft after ${maxRetries} retries due to Rate Limiting.`);
 }
