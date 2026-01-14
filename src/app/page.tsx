@@ -12,9 +12,9 @@ export default async function Home() {
   const { data: featuredJobs } = await supabase
     .from('jobs')
     .select('title, slug, organization, post_date, total_vacancy, is_featured')
-    .eq('is_featured', true)
+    // .eq('is_featured', true) // Showing all for now
     .order('post_date', { ascending: false })
-    .limit(6);
+    .limit(9); // Increased limit
 
   // 2. Fetch Latest Updates (All Jobs)
   // 2. Fetch Latest Updates (All Jobs)

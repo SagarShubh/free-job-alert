@@ -82,8 +82,12 @@ export default async function CategoryPage({ params }: Props) {
         // Note: We need to ensure capitalization matches (usually uppercase 'AP')
         query = query.eq('state_code', category.toUpperCase());
     } else {
-        // Query by job_type
-        query = query.eq('job_type', dbCategory);
+        // Query by job_type OR fuzzy search title/organization
+        // Since imported jobs have null job_type, we fallback to text search
+        // OR logic is hard in chaining, so we use 'ilike' for now
+        if (dbCategory) {
+            query = query.or(`job_type.eq.${dbCategory},title.ilike.%${dbCategory}%,organization.ilike.%${dbCategory}%`);
+        }
     }
 
     const { data } = await query;
