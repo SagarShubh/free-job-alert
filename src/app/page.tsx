@@ -72,7 +72,7 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted-foreground)' }}>
             No featured jobs yet. Check back soon!
           </div>
         )}

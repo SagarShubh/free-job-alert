@@ -27,7 +27,7 @@
     border-radius: 20px;
     background: #fff;
     border: 1px solid #e2e8f0;
-    color: var(--secondary);
+    color: var(--foreground); /* Fixed contrast */
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 500;

@@ -125,7 +125,7 @@ export default async function CategoryPage({ params }: Props) {
                 </div>
             ) : (
                 <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center' }}>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--secondary)' }}>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--muted-foreground)' }}>
                         No active jobs found in this category right now.
                     </p>
                     <p style={{ marginTop: '1rem' }}>

@@ -2,10 +2,11 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
+    background: #ffffff;
+    /* Solid background */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--border);
     /* Remove fixed height to allow auto-growth */
     display: flex;
     flex-direction: column;
@@ -52,7 +53,7 @@
 
 .navLink {
     font-weight: 500;
-    color: var(--secondary);
+    color: var(--foreground); /* Fixed contrast */
     transition: all 0.2s;
     font-size: 0.9rem;
     padding: 0.4rem 0.8rem;
